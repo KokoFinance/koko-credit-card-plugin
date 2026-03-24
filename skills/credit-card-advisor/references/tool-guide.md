@@ -178,7 +178,7 @@ Find the best card for a specific spending category.
 
 **Parameters:**
 - `card_names` (list of strings, required): Cards the user owns
-- `category` (string, required): One of: `groceries`, `dining`, `travel`, `gas`, `online_shopping`, `everything_else`
+- `category` (string, required): One of: `groceries`, `dining`, `travel`, `gas`, `online_shopping`, `car_rental`, `everything_else`
 - `amount` (float, optional, default 100): Purchase amount
 - `session_id` (string, optional): For continuity
 
@@ -209,6 +209,7 @@ Find the best card for a specific spending category.
 - Call this multiple times with different categories to build a full "wallet strategy"
 - The `alternatives` array shows other good options with trade-offs
 - `pro_tip` often contains non-obvious advice worth highlighting
+- For `car_rental`, the recommendation weighs insurance benefits (CDW, primary vs secondary) alongside rewards — not just points earned
 
 ## create_mcp_session
 

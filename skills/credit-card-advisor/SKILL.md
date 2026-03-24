@@ -19,7 +19,7 @@ decisions about credit cards using real card data and AI analysis.
 
 ## Available Tools
 
-You have 7 tools from the `koko-finance` MCP server. Use them as described:
+You have 8 tools from the `koko-finance` MCP server. Use them as described:
 
 | Tool | When to Use |
 |------|------------|
@@ -29,6 +29,7 @@ You have 7 tools from the `koko-finance` MCP server. Use them as described:
 | `calculate_card_value` | User wants to know if a card's annual fee is worth it |
 | `optimize_portfolio` | User wants their whole portfolio analyzed (health score + verdicts) |
 | `recommend_card_for_category` | User asks which card to use for a specific purchase or category |
+| `check_card_renewal` | User asks if they should renew a card when the annual fee is due |
 | `create_mcp_session` | Call once at the start if user will make multiple portfolio-related queries |
 
 ## Workflow Patterns
@@ -63,7 +64,7 @@ You have 7 tools from the `koko-finance` MCP server. Use them as described:
 **Trigger:** User asks which card to swipe, best card for a category, or how to maximize rewards on a purchase.
 
 **Steps:**
-1. Identify the spending category: groceries, dining, travel, gas, online_shopping, or everything_else
+1. Identify the spending category: groceries, dining, travel, gas, online_shopping, car_rental, or everything_else
 2. Get the user's card names if not provided
 3. Call `recommend_card_for_category` with `card_names`, `category`, and `amount`
 4. Present:
@@ -101,16 +102,18 @@ You have 7 tools from the `koko-finance` MCP server. Use them as described:
 
 **Steps:**
 1. Ask about destination and travel style if not provided
-2. Call `recommend_card_for_category` for each relevant category: travel, dining, gas
+2. Call `recommend_card_for_category` for each relevant category: travel, dining, gas, car_rental
 3. Synthesize into a **Trip Card Strategy**:
    - Flights/hotels: use [card]
    - Dining out: use [card]
    - Gas/transport: use [card]
+   - Car rental: use [card] — highlight insurance benefits (CDW, primary vs secondary)
    - Everything else: use [card]
 4. Add travel-specific tips:
    - Mention foreign transaction fees if international travel
    - Note airport lounge access if available
    - Remind about travel insurance and purchase protections
+   - For car rentals: note if primary CDW allows declining rental counter insurance
 
 ### 5. Large Purchase Planning
 
@@ -124,6 +127,36 @@ You have 7 tools from the `koko-finance` MCP server. Use them as described:
    - **Protection benefits** — extended warranty, purchase protection, return protection
    - **Estimated rewards earned** on this purchase (e.g. "~X points, valued at
      approximately $Y at standard redemption rates")
+
+### 6. Card Renewal Decision
+
+**Trigger:** User asks about renewing a card, mentions their annual fee is coming up, or wants to know if a card is still worth keeping.
+
+**Steps:**
+1. Ask which card is up for renewal (if not provided)
+2. Ask about monthly spending by category (improves accuracy)
+3. Optionally ask about other cards in their wallet (provides context)
+4. Optionally ask which card benefits they actually use (e.g. Uber credits, airline fee credit)
+5. Call `check_card_renewal` with `card_name`, `monthly_spending`, `other_cards`, and `benefit_selections` (list of benefit keys the user uses, e.g. `["uber", "airline_fee"]`)
+5. Present:
+   - **Verdict** — RENEW / DOWNGRADE / CANCEL_AND_REPLACE with confidence level
+   - **Value Analysis** — show year-2+ rewards + benefits vs annual fee
+   - **Key Metrics**:
+     - Annual fee amount
+     - Estimated ongoing value (without sign-up bonus)
+     - Net value after fee
+     - Breakeven spending (if applicable)
+   - **Downgrade Options** (if verdict is DOWNGRADE):
+     - Present 2-3 same-issuer cards with lower fees
+     - Explain what benefits are kept vs lost
+     - Note that downgrades typically don't require credit check
+   - **Replacement Suggestions** (if verdict is CANCEL_AND_REPLACE):
+     - Show 2-3 better-fit cards from different issuers
+     - Explain why each is a better match
+     - Include application links
+   - **Retention Tips** — actionable talking points for calling the bank's retention line
+   - **Timing Guidance** — when to act relative to when the annual fee posts
+   - **Value Disclaimer** — use the standard "estimated rewards and credits" framing
 
 ## Output Formatting Rules
 
