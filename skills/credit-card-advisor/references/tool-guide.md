@@ -230,3 +230,210 @@ Create a session for tracking analysis across multiple calls.
 - Only needed if the user will make multiple portfolio-related queries
 - `optimize_portfolio` and `recommend_card_for_category` auto-create sessions if none provided
 - Pass the returned `session_id` to subsequent tool calls for continuity
+
+## which_card_at_merchant
+
+Find the best card to use at a specific merchant. Auto-detects the spending category.
+
+**Parameters:**
+- `merchant` (string, required): Merchant name, e.g. "Starbucks", "Saks Fifth Avenue", "Shell", "Delta Air Lines"
+- `card_names` (list of strings, required): Cards the user owns
+- `amount` (float, optional, default 100): Purchase amount
+
+**Returns:**
+```json
+{
+  "success": true,
+  "recommended_card": "American Express Gold Card",
+  "category_detected": "dining",
+  "category_method": "gemini",
+  "reason": "Starbucks codes as dining — Amex Gold 4x vs Chase Sapphire Reserve 3x",
+  "earnings_comparison": [
+    {"card": "American Express Gold Card", "multiplier": "4x", "earnings": 4.00},
+    {"card": "Chase Sapphire Reserve", "multiplier": "3x", "earnings": 3.00}
+  ]
+}
+```
+
+**Tips:**
+- Unlike `recommend_card_for_category`, the user doesn't need to know the spending category — just name the merchant
+- The `earnings_comparison` array ranks all cards by reward value at that merchant
+- `category_method` shows how the category was resolved (e.g. "gemini" for AI-resolved)
+
+## check_merchant_benefits
+
+Check if any cards have credits or benefits at a specific merchant.
+
+**Parameters:**
+- `merchant` (string, required): Merchant name, e.g. "Saks Fifth Avenue", "Uber", "Disney+", "Delta Air Lines"
+- `card_names` (list of strings, required): Cards the user owns
+
+**Returns:**
+```json
+{
+  "success": true,
+  "matching_benefits": [
+    {
+      "card": "American Express Platinum Card",
+      "benefit": "Saks Fifth Avenue Credit",
+      "value": 100,
+      "frequency": "semi-annual"
+    }
+  ],
+  "earning_recommendation": {
+    "best_card": "American Express Platinum Card",
+    "multiplier": "1x",
+    "note": "Saks codes as general — Amex Platinum earns 1x. Use Amex Platinum to combine with the credit."
+  }
+}
+```
+
+**Tips:**
+- Pair with `which_card_at_merchant` to give complete merchant advice (credits + earning)
+- When the best-earning card differs from the card with credits, the `note` explains the trade-off
+- `matching_benefits` is empty if no cards have credits at that merchant
+
+## get_card_benefits
+
+Get all credits, benefits, and rewards multipliers for a specific card.
+
+**Parameters:**
+- `card_name` (string, required): Card name, e.g. "Amex Platinum", "Chase Sapphire Reserve"
+
+**Returns:**
+```json
+{
+  "success": true,
+  "card": "American Express Platinum Card",
+  "issuer": "American Express",
+  "annual_fee": 695,
+  "credits": [
+    {
+      "name": "Uber Credit",
+      "value": 200,
+      "frequency": "monthly",
+      "schedule": "$15/month + $20 December bonus",
+      "conditions": "Enrolled Amex Platinum cardmembers"
+    }
+  ],
+  "total_credit_value": 1400,
+  "rewards_multipliers": {"flights": 5, "hotels": 5, "dining": 1, "general": 1},
+  "points_program": "amex_mr",
+  "portal_cpp": 1.0
+}
+```
+
+**Tips:**
+- More detailed than `get_card_details` — includes individual credit breakdowns with frequency and conditions
+- Compare `total_credit_value` against `annual_fee` to show how credits offset the fee
+- Use this when the user asks specifically about benefits, not general card info
+
+## get_card_terms
+
+Get Schumer Box data — APR, penalties, and fee terms for a card.
+
+**Parameters:**
+- `card_name` (string, required): Card name (fuzzy matching applied)
+- `issuer` (string, optional): Narrow by issuer, e.g. "Chase"
+
+**Returns:**
+```json
+{
+  "success": true,
+  "card": "Chase Sapphire Reserve",
+  "issuer": "Chase",
+  "terms": {
+    "purchase_apr": "22.49% - 29.49%",
+    "cash_advance_apr": "29.49%",
+    "penalty_apr": "Up to 29.99%",
+    "balance_transfer_apr": "22.49% - 29.49%",
+    "late_fee": "Up to $40",
+    "returned_payment_fee": "Up to $40",
+    "cash_advance_fee": "$10 or 5%",
+    "promotional_apr": null,
+    "promo_apr_months": null,
+    "grace_period_days": 21
+  },
+  "last_updated": "2026-05-15T00:00:00"
+}
+```
+
+**Tips:**
+- Use when the user asks about interest rates, carrying a balance, or penalty fees
+- `last_updated` indicates when terms were last extracted — flag if stale
+- Terms data may not be available for every card; check the `message` field if `terms` is absent
+
+## get_card_changes
+
+Get an audit log of recent changes to a card's data.
+
+**Parameters:**
+- `card_name` (string, required): Card name (fuzzy matching applied)
+- `since_days` (int, optional, default 90): How far back to look
+- `field` (string, optional): Filter to a specific field, e.g. "annual_fee", "rewards_multipliers_json", "key_benefits", "sign_on_bonus"
+
+**Returns:**
+```json
+{
+  "success": true,
+  "card": "American Express Gold Card",
+  "since_days": 90,
+  "change_count": 2,
+  "changes": [
+    {
+      "field": "annual_fee",
+      "old_value": "250",
+      "new_value": "325",
+      "detected_at": "2026-04-01",
+      "source": "bankrate"
+    },
+    {
+      "field": "key_benefits",
+      "old_value": "...",
+      "new_value": "...",
+      "detected_at": "2026-04-01",
+      "source": "issuer"
+    }
+  ]
+}
+```
+
+**Tips:**
+- Use when a user asks "has anything changed on my card?" or "did the fee go up?"
+- If `change_count` is 0, tell the user no changes were detected in the period
+- Combine with `check_card_renewal` when a card's value may have shifted
+
+## get_program_trends
+
+Get CPP and transfer partner ratio trends for a points program.
+
+**Parameters:**
+- `program_key` (string, required): Program identifier — e.g. "chase_ur", "amex_mr", "marriott_bonvoy", "hilton_honors", "delta_skymiles"
+- `since_days` (int, optional, default 180): How far back to look
+
+**Returns:**
+```json
+{
+  "success": true,
+  "program": "Chase Ultimate Rewards",
+  "program_key": "chase_ur",
+  "current_portal_cpp": 1.5,
+  "since_days": 180,
+  "change_count": 1,
+  "changes": [
+    {
+      "field": "portal_cpp",
+      "old_value": "1.5",
+      "new_value": "1.5",
+      "detected_at": "2026-03-15",
+      "source": "manual"
+    }
+  ]
+}
+```
+
+**Tips:**
+- Use when a user asks "has Chase UR lost value?" or "are Amex MR transfer rates changing?"
+- `current_portal_cpp` is the current cents-per-point value through the program's travel portal
+- Combine with `get_card_changes` for a full "health check" on a card and its program
+- If `change_count` is 0, the program valuation has been stable
