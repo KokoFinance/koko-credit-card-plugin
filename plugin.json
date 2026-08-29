@@ -8,7 +8,7 @@
     "url": "https://kokofinance.net"
   },
   "homepage": "https://kokofinance.net/developers.html",
-  "repository": "https://github.com/madanc/koko-credit-card-plugin",
+  "repository": "https://github.com/KokoFinance/koko-credit-card-plugin",
   "license": "MIT",
   "keywords": ["credit-cards", "finance", "rewards", "portfolio"]
 }
