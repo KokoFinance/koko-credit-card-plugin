@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "koko-credit-cards",
+  "version": "1.0.0",
+  "description": "AI credit card advisor. Find cards, compare portfolios, optimize rewards.",
+  "author": {
+    "name": "KoKo Finance",
+    "url": "https://kokofinance.net"
+  },
+  "homepage": "https://kokofinance.net/developers.html",
+  "repository": "https://github.com/madanc/koko-credit-card-plugin",
+  "license": "MIT",
+  "keywords": ["credit-cards", "finance", "rewards", "portfolio"]
+}
