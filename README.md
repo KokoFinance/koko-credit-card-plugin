@@ -4,8 +4,8 @@ A Claude Code plugin that gives Claude expert knowledge about credit cards. Conn
 
 ## What's Included
 
-- **MCP Server Connection** — Auto-connects to `kokofinance.net/mcp/` with 7 tools for searching, comparing, and analyzing credit cards
-- **Credit Card Advisor Skill** — Teaches Claude 5 workflow patterns: portfolio review, which-card-to-use, new card finder, travel planning, and large purchase planning
+- **MCP Server Connection** — Auto-connects to `kokofinance.net/mcp/` with 14 tools and 5 prompts for searching, comparing, and analyzing credit cards
+- **Credit Card Advisor Skill** — Teaches Claude 10 workflow patterns: portfolio review, which-card-to-use, new card finder, travel planning, large purchase planning, card renewal decisions, merchant-specific advice, benefits deep dive, card terms and cost of carry, and card change monitoring
 
 ## Installation
 
@@ -13,7 +13,7 @@ A Claude Code plugin that gives Claude expert knowledge about credit cards. Conn
 
 ```bash
 # Clone and install
-git clone https://github.com/madanc/koko-credit-card-plugin.git
+git clone https://github.com/KokoFinance/koko-credit-card-plugin.git
 claude --plugin-dir ./koko-credit-card-plugin
 ```
 
@@ -41,6 +41,18 @@ Claude will compare rewards rates across your cards for that category and recomm
 
 Claude will search the card database, compare the top matches side by side, and give a clear recommendation with an application link.
 
+### Should I Renew This Card?
+
+> "I only use the Uber credit and airline fee credit on my Amex Platinum. Is it still worth paying the $695 annual fee?"
+
+Claude will weigh year-2+ rewards and benefits against the fee and give a RENEW / DOWNGRADE / CANCEL_AND_REPLACE verdict.
+
+### Which Card at This Merchant?
+
+> "I'm buying coffee at Starbucks. I have a Chase Sapphire Reserve, Amex Gold, and Citi Double Cash. Which card earns the most?"
+
+Claude auto-detects the spending category for the merchant and ranks your cards by reward value.
+
 ## Available MCP Tools
 
 | Tool | Description |
@@ -51,13 +63,23 @@ Claude will search the card database, compare the top matches side by side, and 
 | `calculate_card_value` | Annual fee break-even analysis |
 | `optimize_portfolio` | Portfolio health score and verdicts |
 | `recommend_card_for_category` | Best card for a spending category |
+| `check_card_renewal` | RENEW/DOWNGRADE/CANCEL_AND_REPLACE verdict for a card up for renewal |
+| `which_card_at_merchant` | Best card from your portfolio at a specific merchant |
+| `check_merchant_benefits` | Check if any cards have credits at a merchant |
+| `get_card_benefits` | All credits/benefits for a card |
+| `get_card_terms` | APR, penalty fees, and other Schumer Box terms |
+| `get_card_changes` | Audit log of recent card data changes |
+| `get_program_trends` | Points program valuation history (CPP, transfer ratios) |
 | `create_mcp_session` | Session tracking across multiple queries |
+
+Several tools also accept optional personalization parameters (`credit_tier`, `primary_goal`, `issuer_preferences`, `spending`, and custom KEEP/CANCEL thresholds) — see the [tool guide](skills/credit-card-advisor/references/tool-guide.md) for the full parameter reference, or the [MCP server docs](https://github.com/KokoFinance/koko-mcp-server) for details shared across all MCP clients.
 
 ## Links
 
 - [KoKo Finance](https://kokofinance.net) — Main site
 - [Developer Docs](https://kokofinance.net/developers.html) — MCP server documentation
 - [MCP Endpoint](https://kokofinance.net/mcp/) — Direct MCP server URL
+- [KoKo Finance MCP Server](https://github.com/KokoFinance/koko-mcp-server) — Standalone MCP server repo for non-Claude-Code clients
 
 ## License
 

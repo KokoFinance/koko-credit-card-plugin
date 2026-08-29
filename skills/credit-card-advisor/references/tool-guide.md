@@ -10,6 +10,10 @@ Search for credit cards using natural language.
 **Parameters:**
 - `query` (string, required): Natural language search, e.g. "best travel card under $200 annual fee"
 - `max_results` (int, optional, default 5): Number of results (1-10)
+- `card_type` (string, optional): Filter by card type, e.g. "travel", "cashback", "balance_transfer", "business", "hotel", "airline"
+- `issuer` (string, optional): Filter by issuer, e.g. "Chase", "Amex", "Capital One", "Citi"
+- `max_annual_fee` (int, optional): Maximum annual fee in dollars — cards above this are filtered out
+- `credit_tier` (string, optional): Filter by credit tier eligibility — one of `"poor"`, `"fair"`, `"good"`, `"excellent"`
 
 **Returns:**
 ```json
@@ -42,6 +46,9 @@ Compare 2-3 credit cards side by side with AI analysis.
 **Parameters:**
 - `card_names` (list of strings, required): 2-3 card names, e.g. `["Chase Sapphire Preferred", "Amex Gold"]`
 - `monthly_spending` (dict, optional): Spending by category, e.g. `{"dining": 500, "travel": 300}`
+- `credit_tier` (string, optional): User's credit tier for context — one of `"poor"`, `"fair"`, `"good"`, `"excellent"`
+- `primary_goal` (string, optional): User's primary goal for context — one of `"travel"`, `"cashback"`, `"build_credit"`, `"business"`, `"balance_transfer"`
+- `issuer_preferences` (list of dicts, optional): Boost/de-boost specific issuers, e.g. `[{"issuer": "Chase", "weight": 1.5}]` (1.0 = neutral, range 0.1-3.0)
 
 **Returns:**
 ```json
@@ -87,7 +94,9 @@ Get full details for a specific card.
     "foreign_transaction_fee": "None",
     "apply_url": "https://...",
     "best_for": "...",
-    "partner_brand": null
+    "partner_brand": null,
+    "points_program_key": "chase_ur",
+    "portal_cpp": 1.5
   }
 }
 ```
@@ -103,6 +112,8 @@ Calculate whether a card's annual fee is worth it.
 **Parameters:**
 - `annual_spending` (float, required): Total annual spend on this card
 - `annual_fee` (float, required): Card's annual fee
+- `card_name` (string, optional): When provided, uses the card's actual benefits and category earning multipliers from the database instead of conservative default rates
+- `monthly_spending` (dict, optional): Spending by category, e.g. `{"groceries": 500, "dining": 300, "travel": 200}` — used with `card_name` for category-aware reward calculations
 - `sign_on_bonus` (float, optional, default 0): Bonus amount
 - `sign_on_bonus_type` (string, optional, default "points"): "points", "cash", or "multiplier"
 
@@ -141,7 +152,15 @@ Analyze a full card portfolio with health scoring and verdicts.
 **Parameters:**
 - `card_names` (list of strings, required): All cards the user owns
 - `monthly_spending` (dict, optional): Spending by category
+- `point_balances` (list of dicts, optional): Don't ask upfront. Each item: `{"program": "chase_ur", "balance": 70000}` — warns about stranded points on a CANCEL verdict
+- `benefit_selections` (list of strings, optional): Don't ask upfront. Keys: `uber`, `dining`, `travel`, `airline_fee`, `hotel_fhr`, `saks`, `clear_plus`, `digital_entertainment`, `admirals_club`, `global_entry`. Selected count at 100% utilization, unselected at 0%
 - `session_id` (string, optional): From a previous call for continuity
+- `credit_tier` (string, optional): One of `"poor"`, `"fair"`, `"good"`, `"excellent"`
+- `primary_goal` (string, optional): One of `"travel"`, `"cashback"`, `"build_credit"`, `"business"`, `"balance_transfer"`
+- `issuer_preferences` (list of dicts, optional): e.g. `[{"issuer": "Chase", "weight": 1.5}]` (1.0 = neutral, range 0.1-3.0)
+- `analysis_type` (string, optional): Focus the analysis — one of `"general"`, `"fees"`, `"benefits"`, `"usage"`
+- `cancel_threshold` (float, optional, default -200): Cards with net value below this get CANCEL
+- `keep_threshold` (float, optional, default 100): Cards with net value above this get KEEP
 
 **Returns:**
 ```json
@@ -180,6 +199,10 @@ Find the best card for a specific spending category.
 - `card_names` (list of strings, required): Cards the user owns
 - `category` (string, required): One of: `groceries`, `dining`, `travel`, `gas`, `online_shopping`, `car_rental`, `everything_else`
 - `amount` (float, optional, default 100): Purchase amount
+- `spending` (dict, optional): Full monthly spending profile in addition to `amount`, e.g. `{"groceries": 500, "dining": 300}` — gives fuller context for the recommendation
+- `credit_tier` (string, optional): One of `"poor"`, `"fair"`, `"good"`, `"excellent"`
+- `primary_goal` (string, optional): One of `"travel"`, `"cashback"`, `"build_credit"`, `"business"`, `"balance_transfer"`
+- `issuer_preferences` (list of dicts, optional): e.g. `[{"issuer": "Chase", "weight": 1.5}]` (1.0 = neutral, range 0.1-3.0)
 - `session_id` (string, optional): For continuity
 
 **Returns:**
@@ -210,6 +233,61 @@ Find the best card for a specific spending category.
 - The `alternatives` array shows other good options with trade-offs
 - `pro_tip` often contains non-obvious advice worth highlighting
 - For `car_rental`, the recommendation weighs insurance benefits (CDW, primary vs secondary) alongside rewards — not just points earned
+
+## check_card_renewal
+
+Check whether a card is worth renewing when its annual fee comes due.
+
+Analyzes the card's year-2+ value (without the sign-up bonus), finds same-issuer
+downgrade options, and suggests replacement cards if canceling makes sense. Ask
+the user for their monthly spending before calling this tool — a casual question
+is fine. Do NOT ask about benefits upfront; only pass `benefit_selections` if the
+user volunteers them after seeing initial results.
+
+**Parameters:**
+- `card_name` (string, required): The card to evaluate, e.g. "Chase Sapphire Reserve"
+- `monthly_spending` (dict, optional): Spending by category, e.g. `{"groceries": 500, "dining": 300}`, or a single total `{"total": 5000}`. Omit to use national averages.
+- `other_cards` (list of strings, optional): Other cards in the user's wallet for portfolio context
+- `benefit_selections` (list of strings, optional): Don't ask upfront. Keys: `uber`, `dining`, `travel`, `airline_fee`, `hotel_fhr`, `saks`, `clear_plus`, `digital_entertainment`, `admirals_club`, `global_entry`
+- `benefit_categories_used` (list of strings, optional): Coarser alternative to `benefit_selections`. Valid: `dining_credit`, `travel_credit`, `hotel_credit`, `lounge_access`, `shopping_credit`, `entertainment_credit`, `business_credit`, `loyalty_bonus`, `other`
+- `acquired_date` (string, optional): `YYYY-MM-DD` — used to calculate card tenure
+- `credit_tier` (string, optional): One of `"poor"`, `"fair"`, `"good"`, `"excellent"`
+- `primary_goal` (string, optional): One of `"travel"`, `"cashback"`, `"build_credit"`, `"business"`, `"balance_transfer"`
+- `renewal_cancel_threshold` (float, optional, default -100): Net value below this → CANCEL_AND_REPLACE
+- `renewal_keep_threshold` (float, optional, default 50): Net value at or above this → RENEW
+- `session_id` (string, optional): From a previous call
+
+**Returns:**
+```json
+{
+  "success": true,
+  "verdict": "RENEW",
+  "verdict_reason": "...",
+  "confidence": "high",
+  "annual_fee": 550,
+  "year2_rewards_value": 380.00,
+  "year2_benefits_value": 300.00,
+  "year2_total_value": 680.00,
+  "year2_net_value": 130.00,
+  "breakeven_monthly_spend": 916.67,
+  "downgrade_options": [],
+  "replacement_options": [],
+  "detailed_analysis": "...",
+  "retention_tips": ["...", "..."],
+  "timing_guidance": "...",
+  "card_name": "Chase Sapphire Reserve",
+  "issuer": "Chase",
+  "spending_source": "user_provided",
+  "spending_data_quality": "...",
+  "thresholds_used": {"cancel": -100, "keep": 50}
+}
+```
+
+**Tips:**
+- Verdicts are RENEW, DOWNGRADE, or CANCEL_AND_REPLACE
+- `downgrade_options` and `replacement_options` are only populated when the verdict warrants them
+- `year2_*` fields exclude the sign-up bonus — they reflect ongoing, steady-state value
+- **Important:** `year2_net_value` is an estimate. Present as "estimated rewards and credits [exceed/fall short of] the annual fee by ~$X," not as earnings
 
 ## create_mcp_session
 
