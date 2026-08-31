@@ -168,12 +168,16 @@ Analyze a full card portfolio with health scoring and verdicts.
   "success": true,
   "health_score": 78,
   "net_annual_value": 425.00,
+  "net_annual_value_display": "$425",
   "total_annual_fees": 690,
+  "total_annual_fees_display": "$690",
   "card_details": [
     {
       "card_name": "Chase Sapphire Reserve",
       "annual_fee": 550,
+      "annual_fee_display": "$550",
       "net_value": 312.00,
+      "net_value_display": "$312",
       "verdict": "KEEP",
       "reason": "High travel rewards offset the fee"
     }
@@ -190,6 +194,9 @@ Analyze a full card portfolio with health scoring and verdicts.
 - `health_score` interpretation: 80+ excellent, 60-79 good, 40-59 fair, below 40 needs attention
 - **Important:** `net_annual_value` and per-card `net_value` are estimates. Present as
   "estimated rewards and credits [exceed/fall short of] total fees by ~$X," not as earnings
+- **Critical:** always use `annual_fee_display`, `net_value_display`, `total_annual_fees_display`,
+  and `net_annual_value_display` verbatim in tables — never retype a dollar amount from the raw
+  numeric field. See "Never retype dollar amounts" in SKILL.md.
 
 ## recommend_card_for_category
 

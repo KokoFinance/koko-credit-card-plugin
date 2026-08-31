@@ -51,13 +51,16 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
 4. Present results as:
    - **Health Score** (out of 100) with a one-line interpretation
    - **Fee Offset Summary** — frame as: "Your estimated rewards and credits
-     [exceed / fall short of] your total annual fees by ~$X." Never present
-     this as cash earned or money saved.
-   - **Card-by-Card Verdicts** in a table:
+     [exceed / fall short of] your total annual fees by ~X" using
+     `total_annual_fees_display` and `net_annual_value_display` verbatim
+     (see "Never Retype Dollar Amounts" below). Never present this as cash
+     earned or money saved.
+   - **Card-by-Card Verdicts** in a table, using each card's `annual_fee_display`
+     and `net_value_display` verbatim for the dollar columns:
 
      | Card | Annual Fee | Estimated Benefit Offset | Verdict | Reason |
      |------|-----------|--------------------------|---------|--------|
-     | ... | ... | Credits & rewards [exceed/fall short of] fee by ~$X | **KEEP** / **OPTIMIZE** / **CANCEL** | ... |
+     | ... | `annual_fee_display` | Credits & rewards [exceed/fall short of] fee by `net_value_display` | **KEEP** / **OPTIMIZE** / **CANCEL** | ... |
 
    - **Top 3 Strategies** as numbered recommendations
    - **Quick Wins** as a bullet list
@@ -252,6 +255,20 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
   - Bad: "This card earns you $125" or "Effective cost: $425"
 - Use "~" (approximate) before dollar estimates to signal they are not exact
 - Include the disclaimer once per analysis: estimates depend on actual spending and redemption
+
+### Never Retype Dollar Amounts (Critical)
+
+- When a tool response includes a `*_display` field for a dollar amount
+  (e.g. `annual_fee_display`, `net_value_display`), always use that exact
+  string in your output — never manually reformat, retype, or reconstruct a
+  dollar figure from the corresponding raw numeric field (`annual_fee`,
+  `net_value`), especially inside markdown tables.
+- This matters even when you're confident you know the number: re-typing a
+  dollar amount from memory, rather than copying the provided display string,
+  is how digit-dropping errors happen (e.g. writing "$5" instead of "$325").
+- If a tool response has no `*_display` field for a dollar amount you need to
+  show, format it carefully yourself and double-check every digit against the
+  raw field before finalizing your response.
 
 ## Edge Cases
 
