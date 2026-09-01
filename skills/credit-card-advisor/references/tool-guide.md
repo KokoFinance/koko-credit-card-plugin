@@ -292,7 +292,13 @@ user volunteers them after seeing initial results.
 
 **Tips:**
 - Verdicts are RENEW, DOWNGRADE, or CANCEL_AND_REPLACE
-- `downgrade_options` and `replacement_options` are only populated when the verdict warrants them
+- `downgrade_options` (same-issuer, lower fee) and `replacement_options` (different-issuer,
+  matched to the user's spending) are both computed on every call regardless of verdict —
+  check both, don't assume one is empty just because the verdict doesn't match its "classic"
+  case. For a DOWNGRADE verdict specifically, present both as two distinct paths rather than
+  only the downgrade — see "Card Renewal Decision" in SKILL.md for how to frame this.
+- `replacement_options` is genuinely empty only when `downgrade_options` is also empty (that's
+  what makes the verdict CANCEL_AND_REPLACE instead of DOWNGRADE in the first place)
 - `year2_*` fields exclude the sign-up bonus — they reflect ongoing, steady-state value
 - **Important:** `year2_net_value` is an estimate. Present as "estimated rewards and credits [exceed/fall short of] the annual fee by ~$X," not as earnings
 
