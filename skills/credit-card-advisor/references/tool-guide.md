@@ -55,17 +55,43 @@ Compare 2-3 credit cards side by side with AI analysis.
 {
   "success": true,
   "cards_compared": ["Chase Sapphire Preferred", "Amex Gold"],
-  "comparison": {
-    "analysis": "...",
-    "winner": "...",
-    "use_cases": "..."
-  }
+  "comparison_table": [
+    {
+      "card_name": "Chase Sapphire Preferred Card",
+      "issuer": "Chase",
+      "annual_fee": 95,
+      "annual_fee_display": "$95",
+      "annual_credits_value": 50.00,
+      "annual_credits_value_display": "$50",
+      "sign_on_bonus_value": 600.00,
+      "sign_on_bonus_value_display": "$600",
+      "total_rewards": 320.00,
+      "total_rewards_display": "$320",
+      "total_value": 370.00,
+      "total_value_display": "$370",
+      "net_value": 275.00,
+      "net_value_display": "$275",
+      "first_year_value": 970.00,
+      "first_year_value_display": "$970",
+      "net_first_year": 875.00,
+      "net_first_year_display": "$875",
+      "break_even": {
+        "status": "...",
+        "utilization_needed_pct": 45.0,
+        "monthly_spend_at_base_rate": 250,
+        "monthly_spend_at_base_rate_display": "$250"
+      }
+    }
+  ]
 }
 ```
 
 **Tips:**
-- Always provide `monthly_spending` when available — it personalizes the winner recommendation
+- Always provide `monthly_spending` when available — it personalizes the ranking
 - If a card isn't found, check `not_found_cards` in the response
+- **Critical:** use each entry's `annual_fee_display`, `total_value_display`, and
+  `net_value_display` verbatim in comparison tables — never retype a dollar amount from
+  the raw numeric field. See "Never Retype Dollar Amounts" in SKILL.md.
 
 ## get_card_details
 
@@ -123,20 +149,33 @@ Calculate whether a card's annual fee is worth it.
   "success": true,
   "first_year": {
     "total_value": 850.00,
+    "total_value_display": "$850",
     "net_value": 755.00,
+    "net_value_display": "$755",
     "base_rewards": 200.00,
+    "base_rewards_display": "$200",
     "sign_on_bonus_value": 600.00,
-    "benefits_value": 50.00
+    "sign_on_bonus_value_display": "$600",
+    "benefits_value": 50.00,
+    "benefits_value_display": "$50"
   },
   "ongoing_annual": {
     "total_value": 250.00,
-    "net_value": 155.00
+    "total_value_display": "$250",
+    "net_value": 155.00,
+    "net_value_display": "$155"
   },
   "breakeven_annual_spend": 9500.00,
+  "breakeven_annual_spend_display": "$9,500",
   "verdict": "Estimated rewards and credits exceed the annual fee",
   "note": "Estimates assume typical benefit utilization and standard point redemption values. Actual value depends on spending patterns and how you redeem rewards."
 }
 ```
+
+When `card_name` is provided and matched, the response instead nests these same
+`total_value`/`net_value`/etc. fields (with matching `*_display` siblings) under
+`first_year`/`ongoing_annual`/`break_even.monthly_spend_needed`, using actual card
+data — see `optimize_portfolio` for the equivalent card-aware shape.
 
 **Tips:**
 - Use first_year values when the user is considering a new card (includes sign-on bonus)
@@ -144,6 +183,8 @@ Calculate whether a card's annual fee is worth it.
 - The `breakeven_annual_spend` tells users the approximate spend needed to offset the fee
 - **Important:** `net_value` fields are estimates, not cash. Present as "estimated
   rewards and credits compared to the annual fee," never as money earned or saved
+- **Critical:** always use the `*_display` fields verbatim for dollar values — never
+  retype a dollar amount from the raw numeric field. See "Never Retype Dollar Amounts" in SKILL.md.
 
 ## optimize_portfolio
 
@@ -217,29 +258,43 @@ Find the best card for a specific spending category.
 {
   "success": true,
   "category": "dining",
-  "recommended_card": "American Express Gold Card",
-  "issuer": "American Express",
-  "headline": "4x points on dining — your best option",
-  "explanation": "...",
-  "pro_tip": "...",
+  "amount": 100,
+  "amount_display": "$100",
+  "recommended_card": {
+    "card_name": "American Express Gold Card",
+    "issuer": "American Express",
+    "annual_fee": 325,
+    "annual_fee_display": "$325",
+    "category": "dining",
+    "category_multiplier": 4,
+    "monthly_reward_value": 8.00,
+    "monthly_reward_value_display": "$8",
+    "annual_reward_value": 96.00,
+    "annual_reward_value_display": "$96",
+    "rewards_structure": "4x dining, 4x groceries, 3x flights, 1x everything else"
+  },
   "alternatives": [
     {
       "card_name": "Chase Sapphire Reserve",
       "issuer": "Chase",
-      "value_summary": "3x on dining",
-      "why_use": "Better if you need Visa acceptance",
-      "pro_tip": "..."
+      "annual_fee": 795,
+      "annual_fee_display": "$795",
+      "monthly_reward_value": 6.00,
+      "monthly_reward_value_display": "$6",
+      "annual_reward_value": 72.00,
+      "annual_reward_value_display": "$72"
     }
-  ],
-  "bottom_line": "..."
+  ]
 }
 ```
 
 **Tips:**
 - Call this multiple times with different categories to build a full "wallet strategy"
 - The `alternatives` array shows other good options with trade-offs
-- `pro_tip` often contains non-obvious advice worth highlighting
 - For `car_rental`, the recommendation weighs insurance benefits (CDW, primary vs secondary) alongside rewards — not just points earned
+- **Critical:** use `monthly_reward_value_display` / `annual_reward_value_display` verbatim
+  when explaining the rewards math — never retype a dollar amount from the raw numeric
+  field. See "Never Retype Dollar Amounts" in SKILL.md.
 
 ## check_card_renewal
 
@@ -272,13 +327,36 @@ user volunteers them after seeing initial results.
   "verdict_reason": "...",
   "confidence": "high",
   "annual_fee": 550,
+  "annual_fee_display": "$550",
   "year2_rewards_value": 380.00,
+  "year2_rewards_value_display": "$380",
   "year2_benefits_value": 300.00,
+  "year2_benefits_value_display": "$300",
   "year2_total_value": 680.00,
+  "year2_total_value_display": "$680",
   "year2_net_value": 130.00,
+  "year2_net_value_display": "$130",
   "breakeven_monthly_spend": 916.67,
-  "downgrade_options": [],
-  "replacement_options": [],
+  "breakeven_monthly_spend_display": "$917",
+  "downgrade_options": [
+    {
+      "card_name": "Chase Freedom Unlimited",
+      "issuer": "Chase",
+      "annual_fee": 0,
+      "annual_fee_display": "$0",
+      "card_type": "cashback"
+    }
+  ],
+  "replacement_options": [
+    {
+      "card_name": "Capital One Venture X",
+      "issuer": "Capital One",
+      "annual_fee": 395,
+      "annual_fee_display": "$395",
+      "estimated_net_value": 210.00,
+      "estimated_net_value_display": "$210"
+    }
+  ],
   "detailed_analysis": "...",
   "retention_tips": ["...", "..."],
   "timing_guidance": "...",
@@ -301,6 +379,10 @@ user volunteers them after seeing initial results.
   what makes the verdict CANCEL_AND_REPLACE instead of DOWNGRADE in the first place)
 - `year2_*` fields exclude the sign-up bonus — they reflect ongoing, steady-state value
 - **Important:** `year2_net_value` is an estimate. Present as "estimated rewards and credits [exceed/fall short of] the annual fee by ~$X," not as earnings
+- **Critical:** use `annual_fee_display`, `year2_net_value_display`,
+  `breakeven_monthly_spend_display`, and each option's `annual_fee_display` /
+  `estimated_net_value_display` verbatim — never retype a dollar amount from the raw
+  numeric field. See "Never Retype Dollar Amounts" in SKILL.md.
 
 ## create_mcp_session
 
@@ -398,16 +480,19 @@ Get all credits, benefits, and rewards multipliers for a specific card.
   "card": "American Express Platinum Card",
   "issuer": "American Express",
   "annual_fee": 695,
+  "annual_fee_display": "$695",
   "credits": [
     {
       "name": "Uber Credit",
       "value": 200,
+      "value_display": "$200",
       "frequency": "monthly",
       "schedule": "$15/month + $20 December bonus",
       "conditions": "Enrolled Amex Platinum cardmembers"
     }
   ],
   "total_credit_value": 1400,
+  "total_credit_value_display": "$1,400",
   "rewards_multipliers": {"flights": 5, "hotels": 5, "dining": 1, "general": 1},
   "points_program": "amex_mr",
   "portal_cpp": 1.0
@@ -418,6 +503,9 @@ Get all credits, benefits, and rewards multipliers for a specific card.
 - More detailed than `get_card_details` — includes individual credit breakdowns with frequency and conditions
 - Compare `total_credit_value` against `annual_fee` to show how credits offset the fee
 - Use this when the user asks specifically about benefits, not general card info
+- **Critical:** use each credit's `value_display`, plus `annual_fee_display` and
+  `total_credit_value_display`, verbatim — never retype a dollar amount from the raw
+  numeric field. See "Never Retype Dollar Amounts" in SKILL.md.
 
 ## get_card_terms
 

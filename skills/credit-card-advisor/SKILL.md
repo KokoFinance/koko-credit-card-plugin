@@ -78,7 +78,8 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
 3. Call `recommend_card_for_category` with `card_names`, `category`, and `amount`
 4. Present:
    - **Recommended card** with headline (bold)
-   - **Why** — brief explanation of the rewards math
+   - **Why** — brief explanation of the rewards math, using `monthly_reward_value_display`
+     / `annual_reward_value_display` verbatim (see "Never Retype Dollar Amounts" below)
    - **Pro tip** — from the response
    - **Alternatives** — if the user has other good options, list them briefly
    - **Bottom line** — one sentence summary
@@ -93,7 +94,9 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
 3. If 2+ good results, call `compare_cards` on the top 2-3 matches
 4. Present:
    - **Top Pick** with clear reasoning
-   - **Comparison table** if multiple cards were compared:
+   - **Comparison table** if multiple cards were compared, using `annual_fee_display`,
+     `total_value_display`, and `net_value_display` verbatim for the dollar columns
+     (see "Never Retype Dollar Amounts" below):
 
      | Feature | Card A | Card B | Card C |
      |---------|--------|--------|--------|
@@ -135,7 +138,9 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
    - **Best card for this purchase** with rewards breakdown
    - **Protection benefits** — extended warranty, purchase protection, return protection
    - **Estimated rewards earned** on this purchase (e.g. "~X points, valued at
-     approximately $Y at standard redemption rates")
+     approximately $Y at standard redemption rates"), using the response's
+     `total_value_display` / `net_value_display` fields verbatim rather than
+     reformatting the raw numbers yourself (see "Never Retype Dollar Amounts" below)
 
 ### 6. Card Renewal Decision
 
@@ -150,7 +155,8 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
 6. Present:
    - **Verdict** — RENEW / DOWNGRADE / CANCEL_AND_REPLACE with confidence level
    - **Value Analysis** — show year-2+ rewards + benefits vs annual fee
-   - **Key Metrics**:
+   - **Key Metrics**, using `annual_fee_display`, `year2_net_value_display`, and
+     `breakeven_monthly_spend_display` verbatim (see "Never Retype Dollar Amounts" below):
      - Annual fee amount
      - Estimated ongoing value (without sign-up bonus)
      - Net value after fee
@@ -160,11 +166,13 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
      the user's actual spending) — present both as two distinct paths, not just the
      downgrade:
      - **Option A — Stay in the same lane:** 2-3 same-issuer downgrade cards from
-       `downgrade_options`. Explain what benefits are kept vs lost. Note that
-       downgrades typically don't require a credit check.
+       `downgrade_options`, using each option's `annual_fee_display` verbatim. Explain
+       what benefits are kept vs lost. Note that downgrades typically don't require a
+       credit check.
      - **Option B — Reoptimize for actual spend:** 2-3 cards from `replacement_options`
        (already filtered and ranked — don't call `search_credit_cards` separately for
-       this). Explain why each fits the user's spending better than staying with the
+       this), using each option's `annual_fee_display` and `estimated_net_value_display`
+       verbatim. Explain why each fits the user's spending better than staying with the
        current card's category.
      - Ask directly which the user prioritizes — keeping a similar card type at lower
        cost, or switching strategy to match their actual spend — rather than defaulting
@@ -200,13 +208,15 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
 1. Ask which card if not provided
 2. Call `get_card_benefits` with the card name
 3. Present:
-   - **Credits table:**
+   - **Credits table**, using each credit's `value_display` verbatim for the Value
+     column (see "Never Retype Dollar Amounts" below):
 
      | Benefit | Value | Frequency | Schedule | Conditions |
      |---------|-------|-----------|----------|------------|
      | ... | ... | ... | ... | ... |
 
-   - **Total annual credit value** vs the annual fee
+   - **Total annual credit value** (`total_credit_value_display`) vs the annual fee
+     (`annual_fee_display`)
    - **Rewards multipliers** (e.g. 5x flights, 3x dining, 1x everything else)
    - **Points program** and portal CPP value
    - **Utilization tip** — highlight credits that are easy to miss or have enrollment requirements
@@ -228,7 +238,10 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
      | Penalty APR | ... |
      | Balance Transfer APR | ... |
 
-   - **Fees:** Late fee, returned payment fee, cash advance fee
+   - **Fees:** Late fee, returned payment fee, cash advance fee — these fields are
+     already free-text display strings from the database (e.g. `"Up to $40"`), not raw
+     numbers, so present them verbatim as-is; there is no separate `*_display` field
+     for this tool
    - **Promotional offers:** Introductory APR and duration if available
    - **Grace period** — how many days before interest accrues
    - **Risk note** — warn about penalty APR triggers and how to avoid them
