@@ -147,7 +147,7 @@ You have 14 tools from the `koko-finance` MCP server. Use them as described:
 3. Optionally ask about other cards in their wallet (provides context)
 4. Optionally ask which card benefits they actually use (e.g. Uber credits, airline fee credit)
 5. Call `check_card_renewal` with `card_name`, `monthly_spending`, `other_cards`, and `benefit_selections` (list of benefit keys the user uses, e.g. `["uber", "airline_fee"]`)
-5. Present:
+6. Present:
    - **Verdict** — RENEW / DOWNGRADE / CANCEL_AND_REPLACE with confidence level
    - **Value Analysis** — show year-2+ rewards + benefits vs annual fee
    - **Key Metrics**:
