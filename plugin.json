@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "koko-credit-cards",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI credit card advisor. Find cards, compare portfolios, optimize rewards.",
   "author": {
     "name": "KoKo Finance",
