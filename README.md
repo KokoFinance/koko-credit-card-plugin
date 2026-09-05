@@ -1,6 +1,6 @@
 # KoKo Credit Card Advisor — Claude Code Plugin
 
-A Claude Code plugin that gives Claude expert knowledge about credit cards. Connects to the [KoKo Finance](https://kokofinance.net) MCP server for real-time card data and provides a skill that teaches Claude how to run credit card workflows.
+Credit card intelligence for Claude. Find and compare cards, optimize rewards. Covers break-even calculations, renewal questions, and merchant intelligence. Connects to the [KoKo Finance](https://kokofinance.net) MCP server for real-time card data and provides a skill that teaches Claude how to run these workflows.
 
 ## What's Included
 

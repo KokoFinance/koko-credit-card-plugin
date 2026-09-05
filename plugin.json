@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "koko-credit-cards",
   "version": "1.1.0",
-  "description": "AI credit card advisor. Find cards, compare portfolios, optimize rewards.",
+  "description": "Credit card intelligence for Claude. Find and compare cards, optimize rewards. Covers break-even calculations, renewal questions, and merchant intelligence.",
   "author": {
     "name": "KoKo Finance",
     "url": "https://kokofinance.net"

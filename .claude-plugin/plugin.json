@@ -1,6 +1,6 @@
 {
   "name": "koko-credit-cards",
-  "description": "AI credit card advisor. Find cards, compare portfolios, optimize rewards.",
+  "description": "Credit card intelligence for Claude. Find and compare cards, optimize rewards. Covers break-even calculations, renewal questions, and merchant intelligence.",
   "version": "1.1.0",
   "author": {
     "name": "KoKo Finance",
